@@ -1,5 +1,13 @@
 # Reddit API data collection tool with post tracking
 
+"""
+This file will "scrape" posts from forums on Reddit by interacting with Reddit's Python API "PRAW"
+Posts are sought by most recent. There used to be a way of searching further back by date, but apparently Reddit doesn't work this way any more.
+So, instead, the script compiles the most recent mental health posts from the specified forums.
+It can be run periodically to enlarge the dataset.
+The script will only download posts that haven't previously been accessed, by making reference to their ID's, which are saved in a .txt file in the data folder.
+"""
+
 import praw
 import json
 import os
