@@ -1,0 +1,1 @@
+# Custom logging setup. For example, logging errors or user inputs to a file or console in a structured way.
