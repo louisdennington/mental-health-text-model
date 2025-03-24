@@ -13,3 +13,4 @@ openpyxl
 python-multipart
 jinja2
 aiofiles
+uvicorn
