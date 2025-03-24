@@ -13,9 +13,5 @@ Building an NLP model that can give recommendations to people based on initial t
 
 
 NEXT TASKS
-- refine text return for each cluster and get into recommend.py in a format that works
-- also put recommendations for questonnaires and resources in the feedback
+- put recommendations for questonnaires and resources in the feedback
 - testing and debugging
-
-- put iframe in Wix embed html block, replacing "yourusername" with the url for the tool <iframe src="https://yourusername.pythonanywhere.com" width="100%" height="800px" style="border:none;"></iframe>
-- the build on render uses lots of packages, do these all need to be loaded for the online deployment, or could some be excluded from requirements.txt to make it lighter?
