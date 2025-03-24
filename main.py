@@ -29,11 +29,11 @@ logger.info("Router attached.")
 @fastapi_app.get("/", response_class=HTMLResponse)
 async def serve_ui():
     try:
-        with open("/app/interface.html", "r", encoding="utf-8") as f:
+        with open("app/interface.html", "r", encoding="utf-8") as f:
             html_content = f.read()
         return HTMLResponse(content=html_content, status_code=200)
     except FileNotFoundError:
-        logger.error("interface.html not found at /app/interface.html")
+        logger.error("interface.html not found at app/interface.html")
         return HTMLResponse(content="<h1>interface.html not found</h1>", status_code=404)
 
 # WSGI entry point
