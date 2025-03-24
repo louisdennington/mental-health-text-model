@@ -18,3 +18,4 @@ NEXT TASKS
 - testing and debugging
 
 - put iframe in Wix embed html block, replacing "yourusername" with the url for the tool <iframe src="https://yourusername.pythonanywhere.com" width="100%" height="800px" style="border:none;"></iframe>
+- the build on render uses lots of packages, do these all need to be loaded for the online deployment, or could some be excluded from requirements.txt to make it lighter?
