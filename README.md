@@ -13,12 +13,8 @@ Building an NLP model that can give recommendations to people based on initial t
 
 
 NEXT TASKS
-- check how model is saved so that it can be accessed by queries
 - refine text return for each cluster and get into recommend.py in a format that works
 - also put recommendations for questonnaires and resources in the feedback
-- build user interface 
 - testing and debugging
-
-- rewrite routes.py and main.py to use logger at various stages
 
 - put iframe in Wix embed html block, replacing "yourusername" with the url for the tool <iframe src="https://yourusername.pythonanywhere.com" width="100%" height="800px" style="border:none;"></iframe>

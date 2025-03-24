@@ -13,7 +13,7 @@ router = APIRouter()
 # ----------------------
 # Load model and data
 # ----------------------
-print("🔁 Loading model and index...")
+logger.info("🔁 Loading model and index...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 index = faiss.read_index(FAISS_INDEX_PATH)
 
@@ -50,6 +50,7 @@ class UserInput(BaseModel):
 async def predict(user_input: UserInput):
     text = user_input.text.strip()
     if len(text.split()) < 50:
+        logger.warning("Rejected input: fewer than 50 words.")
         return {"error": "Input must be at least 50 words."}
 
     embedding = model.encode([text], convert_to_numpy=True)
@@ -59,6 +60,8 @@ async def predict(user_input: UserInput):
 
     majority_label, count = Counter(neighbor_labels).most_common(1)[0]
     certainty = round(count / k, 2)
+
+    logger.info(f"Prediction: Cluster {majority_label} with certainty {certainty}")
 
     return {
         "cluster": majority_label,
