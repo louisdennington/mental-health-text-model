@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
+import os
+import datetime
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -34,6 +37,26 @@ with open("app/responses.json", "r", encoding="utf-8") as f:
 def get_cluster_response(cluster_id):
     return PROMPT_LOOKUP.get(str(cluster_id), "This cluster hasn't been fully annotated yet. Thank you for contributing to its training.")
 
+CLUSTER_LABELS = {
+    "0": "Struggles and victories with self-care",
+    "1": "Self-harm and strong emotions",
+    "2": "Struggles with medication",
+    "3": "Experiences of anxiety",
+    "4": "Anxieties about being seen or judged",
+    "5": "Frustrations with being invalidated, misrepresented or misunderstood",
+    "6": "System fatigue and loss of hope",
+    "7": "Night drift: Sleep as escape, day as burden",
+    "8": "Cognitive fog and self-erosion",
+    "9": "Disordered thoughts and dissociation",
+    "10": "Cycles of emotional instability and identity confusion",
+    "11": "Existential confusion and obsessive fears",
+    "12": "Still functioning but emotionally exhausted",
+    "13": "Push and pull in relationships and coping by destroying",
+    "14": "Suicidal feelings and wishing not to exist",
+    "15": "Moments that saved me",
+    "20": "What is wrong with me?"
+}
+
 # ----------------------
 # Request Schema
 # ----------------------
@@ -57,11 +80,38 @@ async def predict(user_input: UserInput):
 
     majority_label, count = Counter(neighbor_labels).most_common(1)[0]
     certainty = round(count / k, 2)
+    label_name = CLUSTER_LABELS.get(str(majority_label), "Unknown")
 
-    logger.info(f"Prediction: Cluster {majority_label} with certainty {certainty}")
+    logger.info(f"Prediction: Cluster {majority_label} ({label_name}) with certainty {certainty}")
 
     return {
         "cluster": majority_label,
         "certainty": certainty,
-        "response": get_cluster_response(majority_label)
+        "response": get_cluster_response(majority_label),
+        "label_name": label_name
     }
+
+# Function for collecting feedback
+
+@router.post("/feedback")
+async def receive_feedback(request: Request):
+    data = await request.json()
+    rating = data.get("rating")
+    feedback = data.get("feedback")
+    timestamp = datetime.datetime.utcnow().isoformat()
+
+    with open("feedback_log.csv", "a", encoding="utf-8") as f:
+        f.write(f"{timestamp},{rating},{feedback.replace(',', ';')}\n")
+
+    return {"message": "Thank you for your feedback"}
+
+# Function for getting UMAP embeddings into html for graphical representation of feature space
+
+@app.get("/umap")
+async def get_umap_data():
+    try:
+        with open(os.path.join("app", "umap_data.json"), "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return JSONResponse(content=data)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)

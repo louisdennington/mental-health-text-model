@@ -12,12 +12,10 @@
       padding: 2rem;
       line-height: 1.6;
     }
-
     h1 {
       font-size: 1.5rem;
       margin-bottom: 1rem;
     }
-
     textarea {
       width: 100%;
       min-height: 120px;
@@ -26,7 +24,6 @@
       border: 1px solid black;
       font-family: inherit;
     }
-
     button {
       background: white;
       color: black;
@@ -36,23 +33,19 @@
       cursor: pointer;
       font-family: inherit;
     }
-
     #output {
       white-space: pre-wrap;
       margin-top: 1rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
-
     .hidden {
       display: none;
     }
-
     .collapsible {
       margin-top: 2rem;
       cursor: pointer;
       font-weight: bold;
     }
-
     .content {
       display: none;
       margin-top: 0.5rem;
@@ -60,11 +53,9 @@
       padding-left: 1rem;
       font-size: 0.9rem;
     }
-
     .rating-container {
       margin-top: 2rem;
     }
-
     input[type=range] {
       width: 100%;
       -webkit-appearance: none;
@@ -73,7 +64,6 @@
       border-radius: 0;
       outline: none;
     }
-
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 16px;
@@ -82,14 +72,12 @@
       border: 2px solid black;
       cursor: pointer;
     }
-
     .range-labels {
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
       margin-top: 0.25rem;
     }
-
     textarea#feedbackBox {
       margin-top: 0.5rem;
       width: 100%;
@@ -99,7 +87,6 @@
       border: 1px solid black;
       font-family: inherit;
     }
-
     @media (min-width: 800px) {
       .technical-box {
         float: right;
@@ -112,9 +99,16 @@
 </head>
 <body>
   <h1>&gt; Welcome to the clustering tool</h1>
-  <p>This tool uses a machine learning model to classify mental health writing into psychological themes. It doesn’t give a diagnosis and should never replace professional help. It simply offers a reflective response based on common language patterns seen in online posts. Minimum 50 words required.</p>
+  <p>This tool uses a machine learning model to classify your free text input. It will analyse what you read and return one of seventeen summaries.</p>
+  <p></p>
+  <p>It doesn't give a diagnosis and should never replace professional help. It simply offers a reflective response based on common language patterns seen in online posts.</p>
+  <p></p>
+  <p>Your input is processed in real time and not stored. No data you submit is logged or recorded.</p>
+  <p></p>
+  <p>You have to type a minimum of 30 words for the model to have enough information.</p>
 
   <textarea id="userInput" placeholder="Type your thoughts here..."></textarea>
+  <div style="font-size: 0.8rem; margin-top: 0.25rem;" id="wordCount">Word count: 0</div>
   <br />
   <button onclick="handleSubmit()">Submit</button>
   <button class="hidden" id="editBtn" onclick="handleEdit()">Edit what I wrote</button>
@@ -122,40 +116,51 @@
 
   <div id="output"></div>
 
+  <div id="umapPlot" class="hidden" style="margin-top: 2rem;"></div>
+
   <div id="ratingSection" class="rating-container hidden">
-    <p style="margin-top: 2rem; margin-bottom: 0.5rem;">Rate the accuracy of this response:</p>
+    <p style="margin-top: 2rem; margin-bottom: 0.5rem;">Optional: Rate the accuracy of this response. Your rating will be sent to Louis for feedback. Note: the text you entered in the box above is not stored.</p>
     <input type="range" min="0" max="10" value="5" id="ratingSlider">
     <div class="range-labels">
       <span>Not accurate at all</span>
       <span>Fits me perfectly</span>
     </div>
-    <textarea id="feedbackBox" placeholder="Optional: Leave additional feedback here..."></textarea>
+    <textarea id="feedbackBox" placeholder="Optional: Send additional feedback to Louis here..."></textarea>
+    <button onclick="submitFeedback()">Submit Feedback</button>
   </div>
 
-  <div class="collapsible" onclick="toggleTechnical()">
-    ▶ Technical Specifications
-  </div>
+  <div class="collapsible" onclick="toggleTechnical()">▶ Technical Specifications</div>
   <div class="content" id="techContent">
-    <p>This tool uses the Sentence-BERT embedding model and a k-Nearest Neighbors search (FAISS) to assign your input to one of 21 pre-defined thematic clusters. No personal data is stored. The clusters were developed from analysis of over 2,000 anonymized Reddit posts.</p>
+    <p>This tool uses machine learning — a type of Artificial Intelligence (AI) — to analyse how people talk about their mental health.</p>
+    <p></p>
+    <p>At its core is a model called <strong>Sentence-BERT</strong> (SBERT), which transforms written language into mathematical representations called embeddings. These embeddings capture the meaning of a sentence in multi-dimensional space. For example, the phrases <em>"I'm feeling low today"</em> and <em>"I don't feel like doing anything"</em> would end up close together in that abstract space, because they express similar emotional content.</p> 
+    <p></p>
+    <p>I first used SBERT to generate embeddings for 2,500 mental health-related posts from Reddit. Then, I applied a clustering algorithm to group together posts that expressed similar themes or emotional experiences. This process identified 17 distinct clusters. I reviewed each cluster and wrote short summaries that describe the key themes and offer guidance, or suggest how someone might begin to approach therapy.</p> 
+    <p></p>
+    <p>The goal was to build a tool that reflects the way people actually talk about their struggles — not to replicate traditional diagnoses, but to look for meaningful descriptions rooted in shared experience and language.</p> 
+    <p></p>
+    <p>When you enter text into the box, the system uses a technique called <strong>k-Nearest Neighbors</strong> (via a library called FAISS) to match your input to one of the 17 clusters, based on the similarity of its embedding. It also provides a <em>"certainty"</em> score that indicates what confidence to place in the assigned cluster.</p> 
+    <p></p>
+    <p>The code base for the project is publicly accessible at <a href="https://github.com/louisdennington/mental-health-text-model" target="_blank">https://github.com/louisdennington/mental-health-text-model</a>.</p>
   </div>
 
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script>
     async function handleSubmit() {
       const input = document.getElementById("userInput").value.trim();
-      if (input.split(" ").length < 50) {
-        alert("Please enter at least 50 words.");
+      if (input.split(" ").length < 30) {
+        alert("Please enter at least 30 words.");
         return;
       }
   
-      // Clear previous output
-      document.getElementById("output").innerText = "⏳ Processing your text...";
+      document.getElementById("output").innerText = "⏳ Processing your text... Usually takes under 30 seconds.";
+      document.getElementById("umapPlot").innerHTML = "";
+      document.getElementById("umapPlot").classList.add("hidden");
   
       try {
         const response = await fetch("https://mental-health-clustering-from-text-input.onrender.com/predict", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: input })
         });
   
@@ -166,21 +171,28 @@
           return;
         }
   
-        const message = `📌 Your post belongs to Cluster ${data.cluster}\n\n${data.response}\n\nCertainty Score: ${data.certainty * 100}%`;
-        typeResponse(message);
+        const message = `Your writing fits most closely with Cluster number ${data.cluster} of 17.\n\n${data.response}\n\nThe machine learning algorithm was ${data.certainty * 100}% certain that your post fitted in this cluster.`;
   
-        document.getElementById("editBtn").classList.remove("hidden");
-        document.getElementById("restartBtn").classList.remove("hidden");
-        document.getElementById("ratingSection").classList.remove("hidden");
+        typeResponse(message, () => {
+          document.getElementById("editBtn").classList.remove("hidden");
+          document.getElementById("restartBtn").classList.remove("hidden");
+          document.getElementById("ratingSection").classList.remove("hidden");
+  
+          // Show UMAP after response has printed
+          setTimeout(() => {
+            document.getElementById("umapPlot").classList.remove("hidden");
+            renderUMAP(data.cluster, data.label_name);
+          }, message.length * 5);  // matches typewriter speed
+        });
       } catch (error) {
         document.getElementById("output").innerText = "❌ Error contacting the server. Please try again later.";
         console.error(error);
       }
     }
   
-    function typeResponse(text) {
+    function typeResponse(text, callback) {
       let i = 0;
-      const speed = 20;
+      const speed = 5;
       const outputDiv = document.getElementById("output");
       outputDiv.innerText = "";
       function type() {
@@ -188,9 +200,64 @@
           outputDiv.innerText += text.charAt(i);
           i++;
           setTimeout(type, speed);
+        } else if (callback) {
+          callback();
         }
       }
       type();
+    }
+  
+    async function renderUMAP(clusterId, label) {
+      const response = await fetch("umap_data.json");
+      const data = await response.json();
+  
+      const traceAll = {
+        x: data.map(d => d.x),
+        y: data.map(d => d.y),
+        mode: 'markers',
+        type: 'scattergl',
+        marker: {
+          size: 4,
+          color: data.map(d => d.cluster),
+          colorscale: 'Viridis',
+          opacity: 0.5,
+          showscale: false
+        },
+        hoverinfo: 'none'
+      };
+  
+      const highlightPoints = data.filter(d => d.cluster == clusterId);
+  
+      const traceHighlight = {
+        x: highlightPoints.map(d => d.x),
+        y: highlightPoints.map(d => d.y),
+        mode: 'markers+text',
+        type: 'scattergl',
+        marker: {
+          size: 10,
+          color: 'red',
+          opacity: 0.9
+        },
+        text: Array(highlightPoints.length).fill(label),
+        textposition: 'top center',
+        textfont: {
+          size: 12,
+          color: 'black'
+        },
+        hoverinfo: 'none'
+      };
+  
+      const layout = {
+        title: {
+          text: "How your writing relates to other posts",
+          font: { size: 18 }
+        },
+        xaxis: { visible: false },
+        yaxis: { visible: false },
+        margin: { l: 0, r: 0, t: 40, b: 0 }
+      };
+  
+      Plotly.newPlot('umapPlot', [traceAll, traceHighlight], layout, { responsive: true });
     }
   
     function handleEdit() {
@@ -204,12 +271,41 @@
       document.getElementById("restartBtn").classList.add("hidden");
       document.getElementById("ratingSection").classList.add("hidden");
       document.getElementById("feedbackBox").value = "";
+      document.getElementById("wordCount").innerText = "Word count: 0";
+      document.getElementById("umapPlot").classList.add("hidden");
+      document.getElementById("umapPlot").innerHTML = "";
+    }
+  
+    function submitFeedback() {
+      const rating = document.getElementById("ratingSlider").value;
+      const feedback = document.getElementById("feedbackBox").value.trim();
+  
+      fetch("https://mental-health-clustering-from-text-input.onrender.com/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, feedback })
+      })
+      .then(res => res.ok ? alert("✅ Feedback submitted!") : alert("⚠️ Error submitting feedback."))
+      .catch(err => console.error("Error:", err));
     }
   
     function toggleTechnical() {
       const content = document.getElementById("techContent");
-      content.style.display = content.style.display === "block" ? "none" : "block";
+      const collapsible = document.querySelector(".collapsible");
+      if (content.style.display === "block") {
+        content.style.display = "none";
+        collapsible.innerText = "▶ Technical Specifications";
+      } else {
+        content.style.display = "block";
+        collapsible.innerText = "▼ Technical Specifications";
+      }
     }
+  
+    document.getElementById("userInput").addEventListener("input", () => {
+      const text = document.getElementById("userInput").value.trim();
+      const wordCount = text === "" ? 0 : text.split(/\s+/).length;
+      document.getElementById("wordCount").innerText = `Word count: ${wordCount}`;
+    });
   </script>
   
 </body>

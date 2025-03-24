@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import faiss
+import os
 from sentence_transformers import SentenceTransformer
 import umap
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 
 # Load the dataset
-df = pd.read_excel(r"C:\Users\louis\OneDrive - University College London\MSc Health Data Science\0 - Personal projects\mental-health-text-model\data\processed\clustered_posts_labeled.xlsx")
+df = pd.read_excel(r"C:\Users\louis\OneDrive - University College London (1)\MSc Health Data Science\0 - Personal projects\mental-health-text-model\data\processed\clustered_posts_labeled.xlsx")
 
 # Filter out unclassifiable posts
 df = df[df["primary_allocation"] != 99].reset_index(drop=True)
@@ -92,7 +93,19 @@ plt.title("UMAP Projection of Training Embeddings by Primary Cluster")
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title="Cluster")
 plt.tight_layout()
 
-# Save plot instead of showing
+# Build DataFrame with UMAP coordinates and cluster labels
+umap_df = pd.DataFrame({
+    "x": embedding_2d[:, 0],
+    "y": embedding_2d[:, 1],
+    "cluster": y_train
+})
+
+# Save JSON file to the app directory (relative to /models)
+output_path = r"C:\Users\louis\OneDrive - University College London (1)\MSc Health Data Science\0 - Personal projects\mental-health-text-model\app\umap_data.json"
+umap_df.to_json(output_path, orient="records")
+
+# Save plot graphic for internal use
 plt.savefig("umap_training_projection_by_primary_cluster.png", dpi=300)
 print("📸 UMAP plot saved as 'umap_training_projection_by_primary_cluster.png'")
+print(f"🧭 JSON data saved to {output_path}")
 plt.close()
