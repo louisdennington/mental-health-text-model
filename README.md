@@ -17,3 +17,7 @@ NEXT TASKS
 - refine text return for each cluster and get into recommend.py in a format that works
 - also put recommendations for questonnaires and resources in the feedback
 - build user interface 
+- testing and debugging
+
+
+- put iframe in Wix embed html block, replacing "yourusername" with the url for the tool <iframe src="https://yourusername.pythonanywhere.com" width="100%" height="800px" style="border:none;"></iframe>

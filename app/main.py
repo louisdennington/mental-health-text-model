@@ -1,41 +1,24 @@
-# Flask or FastAPI app entry point
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routes import router
+from fastapi.middleware.wsgi import WSGIMiddleware
+from starlette.responses import JSONResponse
 
-from flask import Flask
-from app.routes import bp
+# Create FastAPI app
+fastapi_app = FastAPI()
 
-# Import the app
-app = Flask(__name__)
-app.register_blueprint(bp)
+# CORS settings
+fastapi_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust later for security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Define how it runs (app.run())
+# Attach your routes
+fastapi_app.include_router(router)
 
-# Link routes from routes.py
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-
-✅ Ways to make kNN practical for a web app:
-1. Precompute and store all training embeddings
-At app startup (or once during deployment), encode all your posts with SBERT and store them as a NumPy array or in a fast database.
-
-This avoids re-encoding the training set on every request.
-
-2. Use a fast approximate nearest neighbor (ANN) library
-Instead of vanilla kNN, use:
-
-FAISS (Facebook AI)
-
-Annoy (Spotify)
-
-ScaNN (Google)
-
-hnswlib (very fast)
-
-These create an indexed embedding space (e.g. using trees or graphs) that lets you find approximate nearest neighbors in milliseconds — even over 100,000+ entries.
-
-🔥 In practice, FAISS or hnswlib with cosine similarity on SBERT vectors = fast, accurate, production-ready kNN-like behavior.
-
-3. Cache popular predictions
-If your system ends up seeing a lot of similar input phrases, you can cache the outputs.
-
+# WSGI entry point
+def application(environ, start_response):
+    return WSGIMiddleware(fastapi_app)(environ, start_response)
