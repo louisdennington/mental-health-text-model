@@ -25,17 +25,14 @@ with open("index_map.json", "r") as f:
 
 index_to_label = [id_to_label[i] for i in index_map]
 
+with open("/app/responses.json", "r", encoding="utf-8") as f:
+    PROMPT_LOOKUP = json.load(f)
+
 # ----------------------
 # Helper: Response Lookup
 # ----------------------
 def get_cluster_response(cluster_id):
-    responses = {
-        "13": "Disorganized Attachment and Self-Destructive Coping: You may feel emotionally overwhelmed, struggle with impulsivity, or long for connection while fearing it at the same time.",
-        "3": "Somatic Anxiety: You may experience a breakdown in your internal sense of safety, with physical symptoms overwhelming rational thought.",
-        "0": "Small victories matter. Your reflection shows you're learning to care for yourself amid the chaos.",
-        # Add more cluster responses here...
-    }
-    return responses.get(cluster_id, "This cluster hasn't been fully annotated yet. Thank you for contributing to its training.")
+    return PROMPT_LOOKUP.get(str(cluster_id), "This cluster hasn't been fully annotated yet. Thank you for contributing to its training.")
 
 # ----------------------
 # Request Schema
