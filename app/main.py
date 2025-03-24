@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import router
 from fastapi.middleware.wsgi import WSGIMiddleware
 from starlette.responses import JSONResponse
+from logger import logger
 
 # Create FastAPI app
 fastapi_app = FastAPI()

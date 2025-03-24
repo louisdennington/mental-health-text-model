@@ -19,5 +19,6 @@ NEXT TASKS
 - build user interface 
 - testing and debugging
 
+- rewrite routes.py and main.py to use logger at various stages
 
 - put iframe in Wix embed html block, replacing "yourusername" with the url for the tool <iframe src="https://yourusername.pythonanywhere.com" width="100%" height="800px" style="border:none;"></iframe>

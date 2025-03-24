@@ -5,6 +5,8 @@ import faiss
 import numpy as np
 import json
 from collections import Counter
+from config import FAISS_INDEX_PATH, K_NEIGHBORS
+from logger import logger
 
 router = APIRouter()
 
@@ -13,7 +15,7 @@ router = APIRouter()
 # ----------------------
 print("🔁 Loading model and index...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
-index = faiss.read_index("cluster_index.faiss")
+index = faiss.read_index(FAISS_INDEX_PATH)
 
 with open("id_to_label.json", "r") as f:
     id_to_label = json.load(f)
@@ -51,7 +53,7 @@ async def predict(user_input: UserInput):
         return {"error": "Input must be at least 50 words."}
 
     embedding = model.encode([text], convert_to_numpy=True)
-    k = 6
+    k = K_NEIGHBORS
     _, indices = index.search(embedding, k)
     neighbor_labels = [index_to_label[i] for i in indices[0]]
 
