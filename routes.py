@@ -25,7 +25,7 @@ with open("index_map.json", "r") as f:
 
 index_to_label = [id_to_label[i] for i in index_map]
 
-with open("/app/responses.json", "r", encoding="utf-8") as f:
+with open("app/responses.json", "r", encoding="utf-8") as f:
     PROMPT_LOOKUP = json.load(f)
 
 # ----------------------
