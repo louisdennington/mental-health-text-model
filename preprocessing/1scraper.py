@@ -12,7 +12,7 @@ import praw
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Fill in your Reddit app credentials:
 reddit = praw.Reddit(
@@ -45,6 +45,10 @@ if os.path.exists(output_path):
     with open(output_path, "r", encoding="utf-8") as f:
         all_posts = json.load(f)
 
+# Determine scrape run number
+existing_scrape_runs = [post.get("scrape_run", 0) for post in all_posts]
+current_scrape_run = max(existing_scrape_runs, default=0) + 1
+
 # Start scraping
 new_posts = []
 
@@ -66,11 +70,12 @@ for subreddit_name in subreddits:
 
                 seen_ids.add(post.id)
                 new_post = {
+                    "scrape_run": current_scrape_run,
                     "subreddit": subreddit_name,
                     "id": post.id,
                     "title": post.title,
                     "body": post.selftext,
-                    "created_utc": datetime.fromtimestamp(post.created_utc, tz=datetime.UTC).isoformat(),
+                    "created_utc": datetime.fromtimestamp(post.created_utc, tz=timezone.utc).isoformat(),
                     "url": post.url,
                     "score": post.score,
                     "category": category_name,

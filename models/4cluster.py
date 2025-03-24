@@ -72,28 +72,29 @@ print("🖼️ Cluster plot saved to: data/processed/umap_clusters.png")
 with open("data/processed/cleaned_posts.json", "r", encoding="utf-8") as f:
     full_data = json.load(f)
 
-# Load clustering metadata
+# Load clustering metadata (e.g. output from HDBSCAN or similar)
 with open("data/processed/clustered_posts.json", "r", encoding="utf-8") as f:
     metadata = json.load(f)
 
-# Group posts by cluster
-clusters = defaultdict(list)
+# Combine into rows
+rows = []
 for i, entry in enumerate(metadata):
     cluster_id = entry["cluster"]
-    subreddit = entry["subreddit"]
+    subreddit = entry.get("subreddit", "")
     text = full_data[i]["text"]
-    clusters[cluster_id].append((subreddit, text))
+    post_id = full_data[i]["id"]  # ✅ We can rely on this now
+    rows.append({
+        "id": post_id,
+        "cluster": cluster_id,
+        "subreddit": subreddit,
+        "text": text,
+        "label": ""  # Optional: placeholder for manual labeling
+    })
 
-# Save all posts by cluster to a text file
-output_path = "data/processed/cluster_full_dump.txt"
+# Save to Excel
+output_path = "data/processed/clustered_posts_labeled.xlsx"
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
+df = pd.DataFrame(rows)
+df.to_excel(output_path, index=False)
 
-with open(output_path, "w", encoding="utf-8") as f:
-    for cluster_id in sorted(clusters.keys()):
-        f.write(f"\n🔷 CLUSTER {cluster_id} ({len(clusters[cluster_id])} posts)\n")
-        f.write("=" * 80 + "\n")
-        for i, (subreddit, post) in enumerate(clusters[cluster_id], 1):
-            f.write(f"\n--- Post {i} --- (from r/{subreddit})\n")
-            f.write(post + "\n")
-
-print(f"✅ All clustered posts saved to: {output_path}")
+print(f"✅ Labeled post export saved to: {output_path}")
