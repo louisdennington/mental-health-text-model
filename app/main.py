@@ -10,7 +10,7 @@ fastapi_app = FastAPI()
 # CORS settings
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust later for security
+    allow_origins=["https://www.louisdennington.com"],  # Adjust later for security
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

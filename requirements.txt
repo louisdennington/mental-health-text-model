@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+sentence-transformers
+faiss-cpu
+scikit-learn
+numpy
+pandas
+matplotlib
+seaborn
+umap-learn
+openpyxl
+python-multipart
+jinja2
+aiofiles
