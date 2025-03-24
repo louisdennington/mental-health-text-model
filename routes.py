@@ -107,7 +107,7 @@ async def receive_feedback(request: Request):
 
 # Function for getting UMAP embeddings into html for graphical representation of feature space
 
-@app.get("/umap")
+@router.get("/umap")
 async def get_umap_data():
     try:
         with open(os.path.join("app", "umap_data.json"), "r", encoding="utf-8") as f:
