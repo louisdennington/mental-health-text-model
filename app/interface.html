@@ -146,49 +146,54 @@
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script>
-    async function handleSubmit() {
-      const input = document.getElementById("userInput").value.trim();
-      if (input.split(" ").length < 30) {
-        alert("Please enter at least 30 words.");
+  async function handleSubmit() {
+    const input = document.getElementById("userInput").value.trim();
+    if (input.split(" ").length < 30) {
+      alert("Please enter at least 30 words.");
+      return;
+    }
+
+    // Disable Submit button
+    document.querySelector("button[onclick='handleSubmit()']").disabled = true;
+
+    document.getElementById("output").innerText = "⏳ Processing your text... Usually takes under 30 seconds.";
+    document.getElementById("umapGraph").innerHTML = "";
+
+    try {
+      const response = await fetch("https://mental-health-clustering-from-text-input.onrender.com/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        document.getElementById("output").innerText = data.error;
         return;
       }
-  
-      document.getElementById("output").innerText = "⏳ Processing your text... Usually takes under 30 seconds.";
-      document.getElementById("umapPlot").innerHTML = "";
-      document.getElementById("umapPlot").classList.add("hidden");
-  
-      try {
-        const response = await fetch("https://mental-health-clustering-from-text-input.onrender.com/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: input })
-        });
-  
-        const data = await response.json();
-  
-        if (data.error) {
-          document.getElementById("output").innerText = data.error;
-          return;
-        }
-  
-        const message = `Your writing fits most closely with Cluster number ${data.cluster} of 17.\n\n${data.response}\n\nThe machine learning algorithm was ${data.certainty * 100}% certain that your post fitted in this cluster.`;
-  
-        typeResponse(message, () => {
-          document.getElementById("editBtn").classList.remove("hidden");
-          document.getElementById("restartBtn").classList.remove("hidden");
-          document.getElementById("ratingSection").classList.remove("hidden");
-  
-          // Show UMAP after response has printed
-          setTimeout(() => {
-            document.getElementById("umapPlot").classList.remove("hidden");
-            renderUMAP(data.cluster, data.label_name);
-          }, message.length * 5);  // matches typewriter speed
-        });
-      } catch (error) {
-        document.getElementById("output").innerText = "❌ Error contacting the server. Please try again later.";
-        console.error(error);
-      }
+
+      const message = `Your writing fits most closely with Cluster number ${data.cluster} of 17.\n\n${data.response}\n\nThe machine learning algorithm was ${data.certainty * 100}% certain that your post fitted in this cluster.`;
+
+      typeResponse(message, () => {
+        drawUmap(data.cluster);
+        document.getElementById("editBtn").classList.remove("hidden");
+        document.getElementById("restartBtn").classList.remove("hidden");
+        document.getElementById("ratingSection").classList.remove("hidden");
+        
+        // ✅ Re-enable Submit button after printing finishes
+        document.querySelector("button[onclick='handleSubmit()']").disabled = false;
+      });
+
+    } catch (error) {
+      document.getElementById("output").innerText = "❌ Error contacting the server. Please try again later.";
+      console.error(error);
+
+      // ✅ Re-enable Submit if there's an error
+      document.querySelector("button[onclick='handleSubmit()']").disabled = false;
     }
+  }
+
   
     function typeResponse(text, callback) {
       let i = 0;
