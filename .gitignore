@@ -1,2 +1,5 @@
 data/
+venv/
+__pycache__/
 /Putative clusters.docx
+/umap_training_projection_by_primary_cluster.png

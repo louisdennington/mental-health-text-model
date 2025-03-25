@@ -68,28 +68,31 @@ class UserInput(BaseModel):
 # ----------------------
 @router.post("/predict")
 async def predict(user_input: UserInput):
-    text = user_input.text.strip()
-    if len(text.split()) < 50:
-        logger.warning("Rejected input: fewer than 50 words.")
-        return {"error": "Input must be at least 50 words."}
+    try:
+        text = user_input.text.strip()
+        if len(text.split()) < 30:
+            logger.warning("Rejected input: fewer than 30 words.")
+            return {"error": "Input must be at least 30 words."}
 
-    embedding = model.encode([text], convert_to_numpy=True)
-    k = K_NEIGHBORS
-    _, indices = index.search(embedding, k)
-    neighbor_labels = [index_to_label[i] for i in indices[0]]
+        embedding = model.encode([text], convert_to_numpy=True)
+        k = K_NEIGHBORS
+        _, indices = index.search(embedding, k)
+        neighbor_labels = [index_to_label[i] for i in indices[0]]
 
-    majority_label, count = Counter(neighbor_labels).most_common(1)[0]
-    certainty = round(count / k, 2)
-    label_name = CLUSTER_LABELS.get(str(majority_label), "Unknown")
+        majority_label, count = Counter(neighbor_labels).most_common(1)[0]
+        certainty = round(count / k, 2)
 
-    logger.info(f"Prediction: Cluster {majority_label} ({label_name}) with certainty {certainty}")
+        logger.info(f"Prediction: Cluster {majority_label} with certainty {certainty}")
 
-    return {
-        "cluster": majority_label,
-        "certainty": certainty,
-        "response": get_cluster_response(majority_label),
-        "label_name": label_name
-    }
+        return {
+            "cluster": majority_label,
+            "certainty": certainty,
+            "response": get_cluster_response(majority_label)
+        }
+
+    except Exception as e:
+        logger.error(f"Prediction failed: {str(e)}")
+        return {"error": "Prediction failed. Please try again later."}
 
 # Function for collecting feedback
 
