@@ -67,22 +67,29 @@ class UserInput(BaseModel):
 # Prediction Endpoint
 # ----------------------
 @router.post("/predict")
+@router.post("/predict")
 async def predict(user_input: UserInput):
     try:
+        logger.info("🔍 Received text input.")
+
         text = user_input.text.strip()
-        if len(text.split()) < 30:
-            logger.warning("Rejected input: fewer than 30 words.")
-            return {"error": "Input must be at least 30 words."}
+        logger.info(f"Input word count: {len(text.split())}")
+
+        if len(text.split()) < 50:
+            logger.warning("❌ Rejected: fewer than 50 words.")
+            return {"error": "Input must be at least 50 words."}
 
         embedding = model.encode([text], convert_to_numpy=True)
-        k = K_NEIGHBORS
-        _, indices = index.search(embedding, k)
+        logger.info("✅ Embedding created.")
+
+        _, indices = index.search(embedding, K_NEIGHBORS)
+        logger.info("🔁 Nearest neighbor search complete.")
+
         neighbor_labels = [index_to_label[i] for i in indices[0]]
-
         majority_label, count = Counter(neighbor_labels).most_common(1)[0]
-        certainty = round(count / k, 2)
+        certainty = round(count / K_NEIGHBORS, 2)
 
-        logger.info(f"Prediction: Cluster {majority_label} with certainty {certainty}")
+        logger.info(f"🏷️ Predicted cluster: {majority_label} (certainty: {certainty})")
 
         return {
             "cluster": majority_label,
@@ -91,8 +98,8 @@ async def predict(user_input: UserInput):
         }
 
     except Exception as e:
-        logger.error(f"Prediction failed: {str(e)}")
-        return {"error": "Prediction failed. Please try again later."}
+        logger.error(f"Prediction failed: {e}")
+        return {"error": "Prediction failed due to an internal error."}
 
 # Function for collecting feedback
 

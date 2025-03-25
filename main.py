@@ -4,12 +4,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import JSONResponse
 from logger import logger
 
 # Create FastAPI app
 logger.info("Starting FastAPI application...")
 fastapi_app = FastAPI()
+
+# Static hosting for all files in /app, particularly needed for umap_data.json file
+fastapi_app.mount("/static", StaticFiles(directory="app"), name="static")
 
 # CORS settings
 fastapi_app.add_middleware(
