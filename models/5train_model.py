@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 
 # Load the dataset
-df = pd.read_excel(r"C:\Users\louis\OneDrive - University College London (1)\MSc Health Data Science\0 - Personal projects\mental-health-text-model\data\processed\clustered_posts_labeled.xlsx")
+df = pd.read_excel(r"C:\Users\louis\OneDrive - University College London (1)\MSc Health Data Science\0 - Personal projects\mental-health-text-model\data\processed\clustered_posts_labeled_v1.xlsx")
 
 # Filter out unclassifiable posts
 df = df[df["primary_allocation"] != 99].reset_index(drop=True)
