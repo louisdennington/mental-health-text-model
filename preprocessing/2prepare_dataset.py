@@ -1,14 +1,38 @@
-# prepare_dataset.py - SBERT-friendly text preprocessing
-
 import json
 import os
 import re
 
-# Define SBERT-style light cleaner
 def clean_text_sbert(text):
-    text = text.strip()  # Remove leading/trailing whitespace
-    text = re.sub(r"http\S+", "", text)  # Remove URLs
-    text = re.sub(r"\s+", " ", text)  # Normalize multiple spaces
+    # Lowercase
+    text = text.lower()
+    
+    # Remove URLs
+    text = re.sub(r"http\S+", "", text)
+    
+    # Normalize whitespace
+    text = re.sub(r"\s+", " ", text)
+    
+    # Remove common Redditisms
+    reddit_terms = ["tw", "vent", "rant", "update", "throwra", "ama", "crosspost", "cross-post"]
+    for term in reddit_terms:
+        text = re.sub(rf"\b{term}\b", "", text)
+
+    # Remove mental health labels that could bias clustering - this part seemed to remove too much information, resulting in large amorphous clusters
+    #keyword_patterns = [
+    #    r"\bocd\b", r"\bptsd\b", r"\bcptsd\b", r"\bbpd\b",
+    #    r"\baddict(?:ed|ion)?\b", r"\beating disorder\b", r"\banorexia\b", r"\bbulimia\b",
+    #    r"\badhd\b", r"\bautism\b", r"\bautistic\b", r"\bpsychosis\b", r"\bpsychotic\b",
+    #    r"\bdepression\b",  # keep "depressed", "depressing", etc.
+    #    r"\bemotional neglect\b",
+    #    r"\banxious attachment\b", r"\bavoidant attachment\b"
+    #]
+    #for pattern in keyword_patterns:
+    #    text = re.sub(pattern, "", text)
+
+    # Final whitespace cleanup
+    text = text.strip()
+    text = re.sub(r"\s+", " ", text)
+
     return text
 
 # Load original dataset

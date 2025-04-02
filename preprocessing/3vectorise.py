@@ -1,5 +1,3 @@
-# vectorize.py - Generate SBERT embeddings for clustering
-
 import json
 import os
 import numpy as np

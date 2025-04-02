@@ -1,17 +1,41 @@
-# mental-health-text-model
-Building an NLP model that can give recommendations to people based on initial text description
+# What does it do?
+https://www.louisdennington.co.uk/services-3
 
-# Decisions
-- Selecting four Reddit forums with no access requirements as likely to provide suitable data (namely, posts with sufficient content about mental health topics on a variety of themes). r/mental health for general content, r/mentalillness for more severe difficulties, and r/depression and r/anxiety because these are general symptoms that may cover many conditions. Note: the current model won't receive much data about more specific mental health conditions (e.g., OCD, Anorexia, ADHD...) so the training corpus will be composed of some kinds of information and not others. r/mentalhealthUK does not permit scraping.
-- Scraping script to interact with Reddit's PRAW API (which determines how Python scripts can interact with public forums to use data) was written to comply with Reddit's access requirements and fair use policies
-- Ethical considerations: The Reddit API reduces the risk further of the unfair use of identifying information. Reddit is a public forum. Users have not given explicit consent to their data being used to train a model of the current specifications, but Reddit's general information policy indicates that the data is publicly accessible. 
-- Data cleaning was carried out to convert to lowercase, remove URLs, remove whitespace, etc.
-- Older vectorisation processes like TF-IDF or Word2Vec / GloVe	(which are poorer with word order or context) were disregarded in favour of an Sentence-BERT (SBERT) process. No model was found that was specifically fine-tuned for sentence embeddings in mental health data: This could be an avenue for development. 
-- Uniform Manifold Approximation and Projection (UMAP) was used as an intermediary step for dimensionality reduction. It turns the high-dimensional embeddings of SBERT into smaller multidimensional vectors while trying to preserve structure. It can improve clustering quality in high-dimensional data, while running the risk of reducing complexity. For the highly dimensional data expected from Reddit posts, it seemed like a helpful step to include. TUNING PARAMETERS?
-- To create clusters, Hierarchical Density-Based Spatial Clustering of Applications with Noise (HDBSCAN) was used rather than KMeans, since KMeans requires estimating the number of clusters in advance and assumes that clusters are roughly round or spherical (often not true of language). HDBSCAN doesn’t force every point into a cluster, labelling points that don't clearly belong to any dense group as noise (-1). This is advisable for mental health text, where some posts may be unique or ambiguous. It's better to use learning algorithms that don't assume all data points can be classified.
-- The posts were then examined by clusters. Using domain knowledge and AI assistance, descriptive categories were developed for each cluster. 
+1scraper.py: Posts are scraped from a selection of Reddit mental health forums using Reddit's API "PRAW" (which determines how Python scripts can interact with public forums to use data). Forums were checked first to see whether they had local rules against scraping (r/mentalhealthUK does, for example). Posts with fewer than 50 characters are excluded. Users have not given explicit consent to their data being used to train a model of the current specifications, but Reddit's general information policy indicates that the data is publicly accessible. 
 
+2prepare_dataset.py: Basic cleaning of the text (lowercasing, removing whitespaces...) to prepare it for vectorising
 
-NEXT TASKS
-- put recommendations for questonnaires and resources in the feedback
-- testing and debugging
+3vectorise.py: Converts posts to vector embeddings using the pre-trained model all-MiniLM-L6-v2. Older vectorisation processes like TF-IDF or Word2Vec / GloVe	(which are poorer with word order or context) were disregarded in favour of an Sentence-BERT (SBERT) process. No model was found that was specifically fine-tuned for sentence embeddings in mental health data: This could be an avenue for development. 
+
+4cluster.py: Uses UMAP to reduce dimensionality of the clusters (not necessary but can be done on complex text data). It turns the high-dimensional embeddings of SBERT into smaller multidimensional vectors while trying to preserve structure. The script then uses HDBSCAN as an unsupervised learning technique to identify clusters in the post. HDBSCAN was chosen instead of KMeans. KMeans requires estimating the number of clusters in advance and assumes that clusters are roughly round or spherical (often not true of language). HDBSCAN allows posts that can't be clustered to be given the label -1. The script has been through several iterations: Different parameters for UMAP and HDBSCAN produce very different results. The current script cycles through several hyperparameter variations, with the terminal printing those that met two key criteria: (1) a minimal number of posts that are classed as unclusterable (-1) and (2) a reasonable number of clusters (20-60) to allow for sufficient granularity.
+
+Intermediary step: The clusters are examined (with the help of AI) to identify themes, recoded if necessary. Time-consuming, but gives the opportunity to cluster more authentically using domain knowledge.
+
+5train_model.py: For the time being, this uses a Facebook-developed fast version of k-Nearest Neighbours to train a model to assign some inputted text to one of the identified clusters.
+
+NOTE: the pipeline has been re-run up to 4cluster.py but the kNN model not retrained; the model currently online relates to earlier smaller batch scraping of Reddit posts. Things are currently stuck at the intermediary step, trying to relabel a larger corpus of example posts from a wider range of forums. Significant manual reclustering has been needed, but this doesn't affect the embeddings, so a kNN model might struggle to sort existing embeddings by these enforced clusters. A sufficiently annotated dataset could be used to train an additional embedding head that could sit on top of all-MiniLM-L6-v2, to provide a more psychotherapy-focussed clustering process.
+
+6load_model_and_return_prediction.py: The back-end of the online tool.
+
+routes.py
+main.py
+interface.html
+--> These together are the web app
+
+# How to run a virtual environment if you want to test it locally
+
+VSCode terminal commands:
+
+python -m venv venv
+
+venv\Scripts\activate 
+
+python -m pip install --upgrade pip setuptools wheel
+
+pip install -r requirements.txt
+
+uvicorn main:fastapi_app --reload
+
+... Then visit: http://127.0.0.1:8000
+
+... and stop with "deactivate"

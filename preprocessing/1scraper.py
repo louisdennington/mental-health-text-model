@@ -1,10 +1,8 @@
-# Reddit API data collection tool with post tracking
-
 """
 This file will "scrape" posts from forums on Reddit by interacting with Reddit's Python API "PRAW"
 Posts are sought by most recent. There used to be a way of searching further back by date, but apparently Reddit doesn't work this way any more.
-So, instead, the script compiles the most recent mental health posts from the specified forums.
-It can be run periodically to enlarge the dataset.
+Instead, the script compiles the most recent mental health posts from the specified forums.
+It can be run periodically to enlarge the dataset. Daily, or every few hours? Depends on what rates Reddit sets.
 The script will only download posts that haven't previously been accessed, by making reference to their ID's, which are saved in a .txt file in the data folder.
 """
 
@@ -14,7 +12,7 @@ import os
 import time
 from datetime import datetime, timezone
 
-# Fill in your Reddit app credentials:
+# Reddit app credentials:
 reddit = praw.Reddit(
     client_id="dVGQfNLECbg765wP6m9nkw",
     client_secret="_1DtxzYyS5zmp_9bGKzanUnMNCHd6A",
@@ -22,7 +20,7 @@ reddit = praw.Reddit(
 )
 
 # Subreddits to scrape
-subreddits = ["mentalhealth", "depression", "anxiety", "mentalillness"]
+subreddits = ["mentalhealth", "depression", "anxiety", "OCD", "ptsd", "lonely","mentalillness", "CPTSD", "BPD", "addiction", "EatingDisorders", "Psychosis", "neurodiversity", "AnxiousAttachment", "AvoidantAttachment", "emotionalneglect"]
 max_posts_per_subreddit = 1000
 posts_per_category = max_posts_per_subreddit // 3
 categories = {
