@@ -1,6 +1,8 @@
 # What does it do?
 https://www.louisdennington.co.uk/services-3
 
+I currently host the tool on Render's free tier. So you'll get a long loading time (2-4 minutes) and may have to refresh the page a couple of times before it loads.
+
 1scraper.py: Posts are scraped from a selection of Reddit mental health forums using Reddit's API "PRAW" (which determines how Python scripts can interact with public forums to use data). Forums were checked first to see whether they had local rules against scraping (r/mentalhealthUK does, for example). Posts with fewer than 50 characters are excluded. Users have not given explicit consent to their data being used to train a model of the current specifications, but Reddit's general information policy indicates that the data is publicly accessible. 
 
 2prepare_dataset.py: Basic cleaning of the text (lowercasing, removing whitespaces...) to prepare it for vectorising
