@@ -24,6 +24,12 @@ main.py
 interface.html**
 --> These together are the web app
 
+# Possible developments
+
+- possible to generate text from audio recording?
+- more nuanced clusters?
+- retrain embeddings with psychotherapy focus?
+
 # How to run a virtual environment if you want to test it locally
 
 VSCode terminal commands:
